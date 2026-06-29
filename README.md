@@ -1,5 +1,9 @@
 # RAG Document Chat
 
+## Live Demo
+
+**https://rag-document-chat-nrwb.onrender.com**
+
 A Retrieval-Augmented Generation (RAG) application that lets you upload any **PDF or TXT** document and chat with it using **LLaMA 3.1** and **Groq**.
 
 ## How It Works
