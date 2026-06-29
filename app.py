@@ -13,7 +13,13 @@ load_dotenv()
 
 app = Flask(__name__)
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+_embedder = None
+
+def get_embedder():
+    global _embedder
+    if _embedder is None:
+        _embedder = SentenceTransformer("all-MiniLM-L6-v2")
+    return _embedder
 
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -43,6 +49,7 @@ def chunk_text(text: str, size: int = 500, overlap: int = 50) -> list:
     return chunks
 
 def build_index(chunks: list):
+    embedder = get_embedder()
     embeddings = embedder.encode(chunks, show_progress_bar=False)
     embeddings = np.array(embeddings).astype("float32")
     index = faiss.IndexFlatL2(embeddings.shape[1])
@@ -52,6 +59,7 @@ def build_index(chunks: list):
 def retrieve(query: str, k: int = 4) -> list:
     if vector_store["index"] is None:
         return []
+    embedder = get_embedder()
     q_emb = embedder.encode([query]).astype("float32")
     _, indices = vector_store["index"].search(q_emb, k)
     return [vector_store["chunks"][i] for i in indices[0] if i < len(vector_store["chunks"])]
